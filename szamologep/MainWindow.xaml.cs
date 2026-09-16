@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection.Emit;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,9 +12,7 @@ using System.Windows.Shapes;
 
 namespace szamologep
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+    
     public partial class MainWindow : Window
     {
 
@@ -22,9 +21,10 @@ namespace szamologep
             InitializeComponent();
             InitializeCalc();
         }
-        private bool isLastOperator=false;
-        private List<string> szamok = new List<string>();
-        private List<string> operatorok = new List<string>();
+        private bool isLastOperator=true;
+        private string temp = "";
+
+        private List<string> szamok=new List<string>();
 
         private void InitializeCalc()
         {
@@ -36,10 +36,10 @@ namespace szamologep
             }
             string[,] feliratok = new string[4, 4]
             {
-                { "7", "8", "9", "/" },
-                { "4", "5", "6", "*" },
+                { "7", "8", "9", "*" },
+                { "4", "5", "6", "+" },
                 { "1", "2", "3", "-" },
-                { "C", "0", "=", "+" }
+                { "C", "0", "/", "=" }
             };
             for (int i = 0; i < 4; i++)
             {
@@ -76,7 +76,7 @@ namespace szamologep
         }
         private void Btn_Click(object sender, RoutedEventArgs e)
         {
-            string output = "";
+            
             Button btn = sender as Button;
 
             string label = btn.Content.ToString();
@@ -84,28 +84,34 @@ namespace szamologep
 
             if (!isOperator)
             {
-                output += label;
-                tb_kijelzo.Text += label;
-                isLastOperator=false;
+                if (temp.Length != 0 && label != "0")
+                {
+                    temp += label;
+                    tb_kijelzo.Text += label;
+                    isLastOperator = false;
+                }
             }
             else if (isOperator && !isLastOperator)
             {
-                isLastOperator = true;
+                szamok.Add(temp);
+                
                 switch (label)
                 {
                     case "C":
-                        tb_kijelzo.Text = "";
-                        isLastOperator=false;
                         szamok.Clear();
-                        operatorok.Clear();
+                        tb_kijelzo.Text = "";
+                        temp = "";
                         break;
                     case "=":
-                        eredmeny();
+                        if (temp.Length!=0) 
+                        { 
+                            eredmeny();
+                        }
                         break;
                     default:
-                        szamok.Add(output);
-                        operatorok.Add(label);
-                        output = "";
+                        isLastOperator = true;
+                        szamok.Add(label);
+                        temp = "";
                         tb_kijelzo.Text += label;
                         break;
                 }
@@ -113,29 +119,32 @@ namespace szamologep
         }
         private void eredmeny()
         {
-            int eredmeny = 0;
-            int a = 0;
-            int b = 0;
-            for (int i = 1; i < szamok.Count; i++)
+            string ops = "+-*/";
+            int eredmeny = int.Parse(szamok[0]);
+            for (int i=1; i< szamok.Count-1; i++)
             {
-                a = Convert.ToInt32(szamok[i - 1]);
-                b = Convert.ToInt32(szamok[i]);
-                switch (operatorok[i - 1])
+                if (ops.Contains(szamok[i]))
                 {
-                    case "+":
-                        eredmeny = a + b;
-                        break;
-                    case "-":
-                        eredmeny = a - b;
-                        break;
-                    case "*":
-                        eredmeny = a * b;
-                        break;
-                    case "/":
-                        eredmeny = a / b;
-                        break;
+                    switch (szamok[i])
+                    {
+                        case "+":
+                            eredmeny += int.Parse(szamok[i+1]);
+                            break;
+                        case "-":
+                            eredmeny -= int.Parse(szamok[i+1]);
+                            break;
+                        case "*":
+                            eredmeny *= int.Parse(szamok[i+1]);
+                            break;
+                        case "/":
+                            eredmeny /= int.Parse(szamok[i+1]);
+                            break;
+                    }
                 }
             }
+            tb_kijelzo.Text =eredmeny.ToString();
+            temp = "";
+            szamok.Clear();
         }
     }
 }
