@@ -16,11 +16,15 @@ namespace szamologep
     /// </summary>
     public partial class MainWindow : Window
     {
+
         public MainWindow()
         {
             InitializeComponent();
             InitializeCalc();
         }
+        private bool isLastOperator=false;
+        private List<string> szamok = new List<string>();
+        private List<string> operatorok = new List<string>();
 
         private void InitializeCalc()
         {
@@ -41,7 +45,7 @@ namespace szamologep
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    string label=feliratok[i,j];
+                    string label = feliratok[i, j];
                     Button gomb = new Button
                     {
                         Content = feliratok[i, j],
@@ -80,29 +84,58 @@ namespace szamologep
 
             if (!isOperator)
             {
+                output += label;
                 tb_kijelzo.Text += label;
+                isLastOperator=false;
             }
-            else 
+            else if (isOperator && !isLastOperator)
             {
+                isLastOperator = true;
                 switch (label)
                 {
                     case "C":
                         tb_kijelzo.Text = "";
+                        isLastOperator=false;
+                        szamok.Clear();
+                        operatorok.Clear();
                         break;
                     case "=":
+                        eredmeny();
                         break;
-                    case "+":
-                        break;
-                    case "-":
-                        break;
-                    case "*":
-                        break;
-                    case "/":
+                    default:
+                        szamok.Add(output);
+                        operatorok.Add(label);
+                        output = "";
+                        tb_kijelzo.Text += label;
                         break;
                 }
             }
-
-
+        }
+        private void eredmeny()
+        {
+            int eredmeny = 0;
+            int a = 0;
+            int b = 0;
+            for (int i = 1; i < szamok.Count; i++)
+            {
+                a = Convert.ToInt32(szamok[i - 1]);
+                b = Convert.ToInt32(szamok[i]);
+                switch (operatorok[i - 1])
+                {
+                    case "+":
+                        eredmeny = a + b;
+                        break;
+                    case "-":
+                        eredmeny = a - b;
+                        break;
+                    case "*":
+                        eredmeny = a * b;
+                        break;
+                    case "/":
+                        eredmeny = a / b;
+                        break;
+                }
+            }
         }
     }
 }
